@@ -12,6 +12,7 @@
     "test:coverage": "vitest --coverage",
     "migrate": "node-pg-migrate up --envPath .env",
     "migrate:test": "node-pg-migrate up --envPath .test.env",
+    "migrate:prod": "node-pg-migrate up --envPath .env",
     "lint": "eslint ./"
   },
   "keywords": [],
