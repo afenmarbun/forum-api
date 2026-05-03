@@ -5,41 +5,37 @@ on:
     branches:
       - main
       - master
+  workflow_dispatch:
 
 jobs:
   deploy:
+    name: Deploy to VPS
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 22
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -p "${{ secrets.SSH_PORT }}" -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Deploy to VPS
+      - name: Deploy application
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} << 'EOF'
-            set -e
+          ssh -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}" << 'EOF'
+          set -e
 
-            cd /var/www/forum-api
+          cd /var/www/forum-api
 
-            git fetch origin
-            git reset --hard origin/main
+          git fetch origin
+          git reset --hard origin/main
 
-            npm ci --omit=dev
-            npm run migrate:prod
+          npm ci --omit=dev
+          npm run migrate:prod
 
-            pm2 startOrReload ecosystem.config.cjs --update-env
-            pm2 save
+          pm2 startOrReload ecosystem.config.cjs --update-env
+          pm2 save
           EOF
