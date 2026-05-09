@@ -13,11 +13,13 @@ import UserRepository from '../Domains/users/UserRepository.js';
 import ThreadRepository from '../Domains/threads/ThreadRepository.js';
 import CommentRepository from '../Domains/comments/CommentRepository.js';
 import ReplyRepository from '../Domains/replies/ReplyRepository.js';
+import CommentLikeRepository from '../Domains/comment_likes/CommentLikeRepository.js';
 import PasswordHash from '../Applications/security/PasswordHash.js';
 import UserRepositoryPostgres from './repository/UserRepositoryPostgres.js';
 import ThreadRepositoryPostgres from './repository/ThreadRepositoryPostgres.js';
 import CommentRepositoryPostgres from './repository/CommentRepositoryPostgres.js';
 import ReplyRepositoryPostgres from './repository/ReplyRepositoryPostgres.js';
+import CommentLikeRepositoryPostgres from './repository/CommentLikeRepositoryPostgres.js';
 import BcryptPasswordHash from './security/BcryptPasswordHash.js';
 
 // use case
@@ -35,6 +37,7 @@ import DeleteCommentUseCase from '../Applications/use_case/DeleteCommentUseCase.
 import GetThreadDetailUseCase from '../Applications/use_case/GetThreadDetailUseCase.js';
 import AddReplyUseCase from '../Applications/use_case/AddReplyUseCase.js';
 import DeleteReplyUseCase from '../Applications/use_case/DeleteReplyUseCase.js';
+import ToggleCommentLikeUseCase from '../Applications/use_case/ToggleCommentLikeUseCase.js';
 
 // creating container
 const container = createContainer();
@@ -104,6 +107,17 @@ container.register([
         },
         {
           concrete: nanoid,
+        },
+      ],
+    },
+  },
+  {
+    key: CommentLikeRepository.name,
+    Class: CommentLikeRepositoryPostgres,
+    parameter: {
+      dependencies: [
+        {
+          concrete: pool,
         },
       ],
     },
@@ -312,6 +326,27 @@ container.register([
         {
           name: 'replyRepository',
           internal: ReplyRepository.name,
+        },
+      ],
+    },
+  },
+  {
+    key: ToggleCommentLikeUseCase.name,
+    Class: ToggleCommentLikeUseCase,
+    parameter: {
+      injectType: 'destructuring',
+      dependencies: [
+        {
+          name: 'threadRepository',
+          internal: ThreadRepository.name,
+        },
+        {
+          name: 'commentRepository',
+          internal: CommentRepository.name,
+        },
+        {
+          name: 'commentLikeRepository',
+          internal: CommentLikeRepository.name,
         },
       ],
     },

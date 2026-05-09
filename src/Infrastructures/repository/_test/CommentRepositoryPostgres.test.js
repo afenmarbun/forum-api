@@ -160,6 +160,7 @@ describe('CommentRepositoryPostgres', () => {
           date: new Date('2021-08-08T07:22:33.555Z'),
           content: 'komentar pertama',
           isDelete: false,
+          likeCount: 0,
         },
         {
           id: 'comment-comment-456',
@@ -167,6 +168,7 @@ describe('CommentRepositoryPostgres', () => {
           date: new Date('2021-08-08T07:26:21.338Z'),
           content: 'komentar kedua',
           isDelete: true,
+          likeCount: 0,
         },
       ]);
     });

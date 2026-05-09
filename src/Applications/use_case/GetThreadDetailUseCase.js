@@ -44,6 +44,7 @@ class GetThreadDetailUseCase {
           username: comment.username,
           date: comment.date,
           content: comment.isDelete ? '**komentar telah dihapus**' : comment.content,
+          likeCount: Number(comment.likeCount || 0),
           replies: mappedReplies[comment.id] || [],
         })),
     };
