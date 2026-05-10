@@ -209,6 +209,90 @@ describe('Threads endpoints', () => {
     });
   });
 
+  describe('when PUT /threads/:threadId/comments/:commentId/likes', () => {
+    it('should response 200 and add comment like', async () => {
+      const app = await createServer(container);
+      const accessToken = await registerAndLogin(app, {
+        username: 'dicodinglikecomment',
+        password: 'secret',
+        fullname: 'Dicoding Like Comment',
+      });
+      const threadResponse = await request(app)
+        .post('/threads')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          title: 'sebuah thread',
+          body: 'sebuah body thread',
+        });
+      const commentResponse = await request(app)
+        .post(`/threads/${threadResponse.body.data.addedThread.id}/comments`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          content: 'sebuah komentar',
+        });
+
+      const response = await request(app)
+        .put(`/threads/${threadResponse.body.data.addedThread.id}/comments/${commentResponse.body.data.addedComment.id}/likes`)
+        .set('Authorization', `Bearer ${accessToken}`);
+      const detailResponse = await request(app).get(`/threads/${threadResponse.body.data.addedThread.id}`);
+
+      expect(response.status).toEqual(200);
+      expect(response.body.status).toEqual('success');
+      expect(detailResponse.body.data.thread.comments[0].likeCount).toEqual(1);
+    });
+
+    it('should response 200 and delete comment like when comment is already liked', async () => {
+      const app = await createServer(container);
+      const accessToken = await registerAndLogin(app, {
+        username: 'dicodingunlikecomment',
+        password: 'secret',
+        fullname: 'Dicoding Unlike Comment',
+      });
+      const threadResponse = await request(app)
+        .post('/threads')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          title: 'sebuah thread',
+          body: 'sebuah body thread',
+        });
+      const commentResponse = await request(app)
+        .post(`/threads/${threadResponse.body.data.addedThread.id}/comments`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          content: 'sebuah komentar',
+        });
+
+      await request(app)
+        .put(`/threads/${threadResponse.body.data.addedThread.id}/comments/${commentResponse.body.data.addedComment.id}/likes`)
+        .set('Authorization', `Bearer ${accessToken}`);
+      const response = await request(app)
+        .put(`/threads/${threadResponse.body.data.addedThread.id}/comments/${commentResponse.body.data.addedComment.id}/likes`)
+        .set('Authorization', `Bearer ${accessToken}`);
+      const detailResponse = await request(app).get(`/threads/${threadResponse.body.data.addedThread.id}`);
+
+      expect(response.status).toEqual(200);
+      expect(response.body.status).toEqual('success');
+      expect(detailResponse.body.data.thread.comments[0].likeCount).toEqual(0);
+    });
+
+    it('should response 404 when thread not found', async () => {
+      const app = await createServer(container);
+      const accessToken = await registerAndLogin(app, {
+        username: 'dicodinglikenotfound',
+        password: 'secret',
+        fullname: 'Dicoding Like Not Found',
+      });
+
+      const response = await request(app)
+        .put('/threads/thread-not-found/comments/comment-not-found/likes')
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(response.status).toEqual(404);
+      expect(response.body.status).toEqual('fail');
+      expect(response.body.message).toBeTruthy();
+    });
+  });
+
   describe('when POST /threads/:threadId/comments/:commentId/replies', () => {
     it('should response 201 and persisted reply', async () => {
       const app = await createServer(container);
